@@ -55,9 +55,75 @@ export async function removeMetadata(
     return removePdfMetadata(data, opts);
   } else if (file.type.startsWith('image/tiff') || file.name.toLowerCase().endsWith('.tif') || file.name.toLowerCase().endsWith('.tiff')) {
     return removeTiffMetadata(data, opts);
+  } else if (isDocxFile(file)) {
+    return removeDocxMetadata(arrayBuffer);
   } else {
     // For other formats, attempt canvas-based strip
     return stripViaCanvas(file);
+  }
+}
+
+function isDocxFile(file: File): boolean {
+  const ext = file.name.toLowerCase().split('.').pop() || '';
+  return ['docx', 'docm', 'dotx', 'dotm'].includes(ext) ||
+    file.type.includes('officedocument.wordprocessingml');
+}
+
+async function removeDocxMetadata(arrayBuffer: ArrayBuffer): Promise<Blob> {
+  try {
+    const JSZip = (await import('jszip')).default;
+    const zip = await JSZip.loadAsync(arrayBuffer);
+
+    // Clean core.xml
+    const coreFile = zip.file('docProps/core.xml');
+    if (coreFile) {
+      let coreXml = await coreFile.async('string');
+      
+      // Remove metadata elements
+      coreXml = coreXml.replace(/<dc:creator>.*?<\/dc:creator>/gi, '<dc:creator></dc:creator>');
+      coreXml = coreXml.replace(/<dc:title>.*?<\/dc:title>/gi, '<dc:title></dc:title>');
+      coreXml = coreXml.replace(/<dc:subject>.*?<\/dc:subject>/gi, '<dc:subject></dc:subject>');
+      coreXml = coreXml.replace(/<dc:description>.*?<\/dc:description>/gi, '<dc:description></dc:description>');
+      coreXml = coreXml.replace(/<cp:lastModifiedBy>.*?<\/cp:lastModifiedBy>/gi, '<cp:lastModifiedBy></cp:lastModifiedBy>');
+      coreXml = coreXml.replace(/<cp:revision>.*?<\/cp:revision>/gi, '<cp:revision>1</cp:revision>');
+      coreXml = coreXml.replace(/<dcterms:created[^>]*>.*?<\/dcterms:created>/gi, '<dcterms:created xsi:type="dcterms:W3CDTF"></dcterms:created>');
+      coreXml = coreXml.replace(/<dcterms:modified[^>]*>.*?<\/dcterms:modified>/gi, '<dcterms:modified xsi:type="dcterms:W3CDTF"></dcterms:modified>');
+      
+      zip.file('docProps/core.xml', coreXml);
+    }
+
+    // Clean app.xml
+    const appFile = zip.file('docProps/app.xml');
+    if (appFile) {
+      let appXml = await appFile.async('string');
+      
+      // Remove application metadata
+      appXml = appXml.replace(/<Application>.*?<\/Application>/gi, '<Application></Application>');
+      appXml = appXml.replace(/<AppVersion>.*?<\/AppVersion>/gi, '<AppVersion></AppVersion>');
+      appXml = appXml.replace(/<Company>.*?<\/Company>/gi, '<Company></Company>');
+      appXml = appXml.replace(/<Template>.*?<\/Template>/gi, '<Template></Template>');
+      appXml = appXml.replace(/<TotalTime>.*?<\/TotalTime>/gi, '<TotalTime>0</TotalTime>');
+      
+      zip.file('docProps/app.xml', appXml);
+    }
+
+    // Remove custom.xml if exists
+    if (zip.file('docProps/custom.xml')) {
+      zip.remove('docProps/custom.xml');
+    }
+
+    // Generate cleaned zip
+    const cleanedBlob = await zip.generateAsync({ 
+      type: 'blob',
+      mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+
+    return cleanedBlob;
+  } catch (err) {
+    console.error('DOCX metadata removal error:', err);
+    return new Blob([arrayBuffer], { 
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+    });
   }
 }
 
@@ -231,12 +297,89 @@ async function removePdfMetadata(data: Uint8Array, opts: RemovalOptions): Promis
     pdfDoc.setProducer('');
     pdfDoc.setKeywords([]);
 
-    const cleanedBytes = await pdfDoc.save();
-    return new Blob([cleanedBytes as unknown as BlobPart], { type: 'application/pdf' });
+    // Deep clean: Remove XMP Metadata streams
+    if (opts.removeXmp) {
+      const context = pdfDoc.context;
+      const trailer = context.trailerInfo;
+      
+      // Remove metadata reference from catalog if exists
+      const catalog = context.lookup(context.trailerInfo.Root);
+      if (catalog && catalog instanceof (await import('pdf-lib')).PDFDict) {
+        const metadataKey = (await import('pdf-lib')).PDFName.of('Metadata');
+        if (catalog.has(metadataKey)) {
+          catalog.delete(metadataKey);
+        }
+      }
+    }
+
+    // Save without linearization markers
+    const cleanedBytes = await pdfDoc.save({
+      useObjectStreams: false,
+      addDefaultPage: false,
+    });
+
+    // Binary scan: Remove any remaining XMP packets
+    let cleanedArray = new Uint8Array(cleanedBytes) as Uint8Array<ArrayBuffer>;
+    if (opts.removeXmp) {
+      cleanedArray = removeXMPFromBinary(cleanedArray);
+    }
+
+    return new Blob([cleanedArray.buffer], { type: 'application/pdf' });
   } catch (err) {
     console.error('PDF metadata removal error:', err);
     return new Blob([data.buffer as ArrayBuffer], { type: 'application/pdf' });
   }
+}
+
+function removeXMPFromBinary(data: Uint8Array): Uint8Array<ArrayBuffer> {
+  const xmpStart = '<?xpacket begin';
+  const xmpEnd = '<?xpacket end';
+  
+  let result: Uint8Array<ArrayBuffer> = data as Uint8Array<ArrayBuffer>;
+  let searchStart = 0;
+  
+  while (true) {
+    const startIdx = findStringInBytes(result, xmpStart, searchStart);
+    if (startIdx === -1) break;
+    
+    const endIdx = findStringInBytes(result, xmpEnd, startIdx);
+    if (endIdx === -1) break;
+    
+    // Find the end of the xpacket end tag (?>)
+    const tagEnd = findStringInBytes(result, '?>', endIdx);
+    if (tagEnd === -1) break;
+    
+    const packetEnd = tagEnd + 2;
+    
+    // Remove the XMP packet
+    const before = result.slice(0, startIdx);
+    const after = result.slice(packetEnd);
+    
+    result = new Uint8Array(before.length + after.length);
+    result.set(before, 0);
+    result.set(after, before.length);
+    
+    searchStart = startIdx;
+  }
+  
+  return result;
+}
+
+function findStringInBytes(data: Uint8Array, str: string, startIdx: number = 0): number {
+  const strBytes = new TextEncoder().encode(str);
+  
+  for (let i = startIdx; i <= data.length - strBytes.length; i++) {
+    let match = true;
+    for (let j = 0; j < strBytes.length; j++) {
+      if (data[i + j] !== strBytes[j]) {
+        match = false;
+        break;
+      }
+    }
+    if (match) return i;
+  }
+  
+  return -1;
 }
 
 function stripViaCanvasFromBuffer(data: Uint8Array, mimeType: string): Promise<Blob> {
