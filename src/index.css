@@ -2,20 +2,20 @@
 @import 'leaflet/dist/leaflet.css';
 
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.035);
+  --glass-bg: rgba(255, 255, 255, 0.03);
   --glass-border: rgba(255, 255, 255, 0.12);
   --glass-shadow: rgba(0, 0, 0, 0.5);
   --glass-highlight: rgba(255, 255, 255, 0.1);
   --text-primary: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-secondary: #94a3b8;
   --accent: #a855f7;
   --accent-glow: rgba(168, 85, 247, 0.4);
   --danger: #ef4444;
   --success: #22c55e;
   --warning: #f59e0b;
-  --bg-primary: #0e0e1a;
+  --bg-primary: #0a0a14;
   --bg-secondary: #1a1a2e;
-  --bg-card: rgba(255, 255, 255, 0.035);
+  --bg-card: rgba(255, 255, 255, 0.03);
 }
 
 .light {
@@ -64,8 +64,8 @@ body {
   left: -10%;
   width: 80vw;
   height: 80vw;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
-  filter: blur(120px);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  filter: blur(150px);
   animation: float1 20s ease-in-out infinite;
 }
 
@@ -76,20 +76,9 @@ body {
   right: -15%;
   width: 90vw;
   height: 90vw;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
-  filter: blur(140px);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
+  filter: blur(150px);
   animation: float2 25s ease-in-out infinite;
-}
-
-.ambient-blob-3 {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%);
-  filter: blur(100px);
-  animation: float3 30s ease-in-out infinite;
 }
 
 @keyframes float1 {
@@ -102,10 +91,7 @@ body {
   50% { transform: translate(-8%, -5%) scale(1.05); }
 }
 
-@keyframes float3 {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-45%, -55%) scale(1.15); }
-}
+
 
 /* Premium Glassmorphism Base */
 .liquid-glass {
@@ -139,21 +125,7 @@ body {
   border-radius: 20px 20px 0 0;
 }
 
-.liquid-glass::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.04) 0%,
-    transparent 50%
-  );
-  pointer-events: none;
-  transition: opacity 0.3s;
-}
+
 
 .liquid-glass:hover {
   border-color: rgba(255, 255, 255, 0.18);
@@ -164,10 +136,7 @@ body {
     0 0 30px var(--accent-glow);
 }
 
-/* Chromium-specific SVG refraction */
-.chromium-glass {
-  filter: url(#liquid-glass-refraction);
-}
+
 
 /* Scrollbar */
 ::-webkit-scrollbar {
@@ -278,7 +247,7 @@ body {
 }
 
 .toggle-switch.active {
-  background: linear-gradient(135deg, #a855f7, #6366f1);
+  background: #a855f7;
   border-color: rgba(168, 85, 247, 0.5);
   box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
 }
@@ -302,7 +271,7 @@ body {
 
 /* Premium Button */
 .btn-primary {
-  background: linear-gradient(135deg, #a855f7, #6366f1);
+  background: linear-gradient(135deg, #6366f1, #a855f7);
   color: white;
   font-weight: 600;
   border: none;
@@ -310,7 +279,7 @@ body {
   padding: 14px 28px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -344,4 +313,31 @@ body {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .liquid-glass {
+    border-radius: 16px;
+  }
+  
+  .btn-primary {
+    padding: 16px 24px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
+  
+  .toggle-switch {
+    width: 56px;
+    height: 30px;
+  }
+  
+  .toggle-switch::after {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .toggle-switch.active::after {
+    transform: translateX(26px);
+  }
 }

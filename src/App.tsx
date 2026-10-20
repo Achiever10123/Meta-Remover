@@ -14,24 +14,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// SVG filter for liquid glass refraction (Chromium only)
-function LiquidGlassSVG() {
-  return (
-    <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-      <defs>
-        <filter id="liquid-glass-refraction">
-          <feTurbulence type="fractalNoise" baseFrequency="0.015" numOctaves="3" result="noise" seed="5" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="3" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
-      </defs>
-    </svg>
-  );
-}
 
-// Detect Chromium
-function isChromium(): boolean {
-  return /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
-}
 
 // Theme hook
 function useTheme() {
@@ -48,22 +31,7 @@ function useTheme() {
   return { dark, toggle: () => setDark(d => !d) };
 }
 
-// Mouse tracking for liquid glass
-function useMouseTracking(ref: React.RefObject<HTMLElement | null>) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const handler = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 100;
-      const y = ((e.clientY - rect.top) / rect.height) * 100;
-      el.style.setProperty('--mouse-x', `${x}%`);
-      el.style.setProperty('--mouse-y', `${y}%`);
-    };
-    el.addEventListener('mousemove', handler);
-    return () => el.removeEventListener('mousemove', handler);
-  }, [ref]);
-}
+
 
 // File type helpers
 function getFileCategory(file: File): 'image' | 'pdf' | 'office' {
@@ -91,10 +59,6 @@ export default function App() {
   const [selectiveMode, setSelectiveMode] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useMouseTracking(containerRef);
-
-  const chromium = isChromium();
 
   const handleFiles = useCallback(async (newFiles: FileList | File[]) => {
     const fileArr = Array.from(newFiles);
@@ -204,20 +168,17 @@ export default function App() {
   const totalRemovableFields = selectedFile?.entries.filter(e => e.removable).length || 0;
 
   return (
-    <div ref={containerRef} className={`min-h-screen relative ${chromium ? 'chromium-glass' : ''}`} style={{ background: dark ? 'var(--bg-primary)' : 'var(--bg-primary)' }}>
-      <LiquidGlassSVG />
+    <div ref={containerRef} className="min-h-screen relative" style={{ background: 'var(--bg-primary)' }}>
 
       {/* Ambient Background */}
-      <div className="ambient-bg">
-        <div className="ambient-blob-3" />
-      </div>
+      <div className="ambient-bg" />
 
       {/* Main Content Container */}
-      <div className="relative z-10 min-h-screen p-4 md:p-6 lg:p-8">
+      <div className="relative z-10 min-h-screen p-5 md:p-6 lg:p-8">
         
         {/* Header */}
-        <header className="liquid-glass mb-6 px-6 py-4 flex items-center justify-between" style={{ borderRadius: '20px' }}>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+        <header className="liquid-glass mb-5 md:mb-6 px-5 md:px-6 py-4 flex items-center justify-between" style={{ borderRadius: '20px' }}>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             MetaWipe
           </h1>
           <div className="flex items-center gap-4">
@@ -231,13 +192,13 @@ export default function App() {
         </header>
 
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
           
           {/* Left Column - Dropzone */}
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-5 md:gap-6">
             {/* Main Dropzone */}
             <div
-              className={`liquid-glass p-8 md:p-12 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[400px] ${dragActive ? 'drag-active' : ''}`}
+              className={`liquid-glass p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[280px] sm:min-h-[320px] md:min-h-[400px] ${dragActive ? 'drag-active' : ''}`}
               style={{ borderRadius: '24px' }}
               onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
               onDragLeave={() => setDragActive(false)}
@@ -253,14 +214,14 @@ export default function App() {
                 onChange={(e) => e.target.files && handleFiles(e.target.files)}
               />
               
-              <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-                <i className="fa-solid fa-cloud-arrow-up text-3xl" style={{ color: '#a855f7' }} />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-4 sm:mb-6" style={{ background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
+                <i className="fa-solid fa-cloud-arrow-up text-2xl sm:text-3xl" style={{ color: '#a855f7' }} />
               </div>
               
-              <h2 className="text-xl md:text-2xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
                 Drop files here
               </h2>
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              <p className="text-xs sm:text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Images, PDF, Office docs
               </p>
             </div>
@@ -421,12 +382,12 @@ export default function App() {
             )}
 
             {/* Removal Options Panel */}
-            <div className="liquid-glass p-6" style={{ borderRadius: '20px' }}>
-              <h3 className="text-xs font-bold uppercase tracking-wider mb-6" style={{ color: 'var(--text-secondary)' }}>
+            <div className="liquid-glass p-5 sm:p-6" style={{ borderRadius: '20px' }}>
+              <h3 className="text-xs font-bold uppercase tracking-wider mb-5 sm:mb-6" style={{ color: 'var(--text-secondary)' }}>
                 Removal Options
               </h3>
 
-              <div className="space-y-5">
+              <div className="space-y-4 sm:space-y-5">
                 <OptionToggle label="EXIF Data" checked={removalOptions.removeExif} onChange={(v) => setRemovalOptions(o => ({ ...o, removeExif: v }))} />
                 <OptionToggle label="IPTC Data" checked={removalOptions.removeIptc} onChange={(v) => setRemovalOptions(o => ({ ...o, removeIptc: v }))} />
                 <OptionToggle label="XMP Data" checked={removalOptions.removeXmp} onChange={(v) => setRemovalOptions(o => ({ ...o, removeXmp: v }))} />
@@ -485,9 +446,9 @@ export default function App() {
 // Sub-components
 function OptionToggle({ label, checked, onChange, desc }: { label: string; checked: boolean; onChange: (v: boolean) => void; desc?: string }) {
   return (
-    <div className="flex items-center justify-between">
-      <div className="flex-1">
-        <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{label}</span>
+    <div className="flex items-center justify-between gap-4">
+      <div className="flex-1 min-w-0">
+        <span className="text-sm sm:text-base font-medium" style={{ color: 'var(--text-primary)' }}>{label}</span>
         {desc && <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{desc}</p>}
       </div>
       <div
