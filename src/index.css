@@ -2,20 +2,20 @@
 @import 'leaflet/dist/leaflet.css';
 
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.15);
-  --glass-shadow: rgba(0, 0, 0, 0.3);
-  --glass-highlight: rgba(255, 255, 255, 0.25);
-  --text-primary: #f0f0f5;
-  --text-secondary: #a0a0b0;
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.4);
+  --glass-bg: rgba(255, 255, 255, 0.035);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+  --glass-highlight: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --accent: #a855f7;
+  --accent-glow: rgba(168, 85, 247, 0.4);
   --danger: #ef4444;
   --success: #22c55e;
   --warning: #f59e0b;
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: rgba(20, 20, 35, 0.7);
+  --bg-primary: #0e0e1a;
+  --bg-secondary: #1a1a2e;
+  --bg-card: rgba(255, 255, 255, 0.035);
 }
 
 .light {
@@ -25,8 +25,8 @@
   --glass-highlight: rgba(255, 255, 255, 0.9);
   --text-primary: #1a1a2e;
   --text-secondary: #4a4a5a;
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.2);
+  --accent: #a855f7;
+  --accent-glow: rgba(168, 85, 247, 0.2);
   --bg-primary: #f0f2f5;
   --bg-secondary: #e8eaef;
   --bg-card: rgba(255, 255, 255, 0.7);
@@ -42,20 +42,83 @@ body {
   background: var(--bg-primary);
   overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
+  position: relative;
 }
 
-/* Liquid Glass Base */
+/* Ambient Background Blobs */
+.ambient-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.ambient-bg::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 80vw;
+  height: 80vw;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
+  filter: blur(120px);
+  animation: float1 20s ease-in-out infinite;
+}
+
+.ambient-bg::after {
+  content: '';
+  position: absolute;
+  bottom: -30%;
+  right: -15%;
+  width: 90vw;
+  height: 90vw;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+  filter: blur(140px);
+  animation: float2 25s ease-in-out infinite;
+}
+
+.ambient-blob-3 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.2) 0%, transparent 70%);
+  filter: blur(100px);
+  animation: float3 30s ease-in-out infinite;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5%, 10%) scale(1.1); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-8%, -5%) scale(1.05); }
+}
+
+@keyframes float3 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-45%, -55%) scale(1.15); }
+}
+
+/* Premium Glassmorphism Base */
 .liquid-glass {
   position: relative;
   background: var(--glass-bg);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow:
-    0 8px 32px var(--glass-shadow),
-    inset 0 1px 0 var(--glass-highlight),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -69,11 +132,11 @@ body {
   height: 50%;
   background: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.12) 0%,
+    rgba(255, 255, 255, 0.06) 0%,
     rgba(255, 255, 255, 0) 100%
   );
   pointer-events: none;
-  border-radius: 16px 16px 0 0;
+  border-radius: 20px 20px 0 0;
 }
 
 .liquid-glass::after {
@@ -85,7 +148,7 @@ body {
   height: 200%;
   background: radial-gradient(
     circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(255, 255, 255, 0.06) 0%,
+    rgba(255, 255, 255, 0.04) 0%,
     transparent 50%
   );
   pointer-events: none;
@@ -93,11 +156,12 @@ body {
 }
 
 .liquid-glass:hover {
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 12px 40px var(--glass-shadow),
-    inset 0 1px 0 var(--glass-highlight),
-    0 0 20px var(--accent-glow);
+    0 12px 40px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 30px var(--accent-glow);
 }
 
 /* Chromium-specific SVG refraction */
@@ -196,34 +260,88 @@ body {
 .badge-pdf { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 .badge-office { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
 
-/* Toggle switch */
+/* Premium Toggle switch */
 .toggle-switch {
   position: relative;
-  width: 48px;
-  height: 24px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  width: 52px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   cursor: pointer;
-  transition: background 0.3s;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+}
+
+.toggle-switch:hover {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .toggle-switch.active {
-  background: var(--accent);
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
 }
 
 .toggle-switch::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 18px;
-  height: 18px;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
   background: white;
   border-radius: 50%;
-  transition: transform 0.3s;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-switch.active::after {
   transform: translateX(24px);
+}
+
+/* Premium Button */
+.btn-primary {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
