@@ -249,7 +249,7 @@ export default function App() {
 
   const selectedFile = selectedIdx >= 0 ? files[selectedIdx] : null;
   const totalRemovableFields = selectedFile?.entries.filter(e => e.removable).length || 0;
-  const totalTagsFound = selectedFile?.entries.length || 0;
+  const totalTagsFound = selectedFile?.entries.filter(e => e.category !== 'file').length || 0;
   const tagsPurged = selectedFile?.cleanResult?.tagsRemoved || 0;
 
   return (
@@ -400,6 +400,7 @@ export default function App() {
 
               <div className="max-h-[500px] overflow-y-auto space-y-3">
                 {Object.entries(selectedFile.entries.reduce((acc, entry) => {
+                  if (entry.category === 'file') return acc; // Skip file info section
                   if (!acc[entry.category]) acc[entry.category] = [];
                   acc[entry.category].push(entry);
                   return acc;
