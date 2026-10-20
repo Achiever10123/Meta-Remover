@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { readMetadata, FileMetadata, getCategoryLabel, formatFileSize } from './utils/metadataReader';
 import { removeMetadata, getCleanedFilename, RemovalOptions, DEFAULT_OPTIONS } from './utils/metadataRemover';
 import JSZip from 'jszip';
@@ -16,20 +16,7 @@ L.Icon.Default.mergeOptions({
 
 
 
-// Theme hook
-function useTheme() {
-  const [dark, setDark] = useState(() => {
-    const saved = localStorage.getItem('metawipe-theme');
-    return saved ? saved === 'dark' : true;
-  });
 
-  useEffect(() => {
-    document.documentElement.className = dark ? 'dark' : 'light';
-    localStorage.setItem('metawipe-theme', dark ? 'dark' : 'light');
-  }, [dark]);
-
-  return { dark, toggle: () => setDark(d => !d) };
-}
 
 
 
@@ -49,7 +36,6 @@ function getFileIcon(file: File): string {
 
 // Main App
 export default function App() {
-  const { dark, toggle: toggleTheme } = useTheme();
   const [files, setFiles] = useState<FileMetadata[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [processing, setProcessing] = useState(false);
@@ -170,24 +156,34 @@ export default function App() {
   return (
     <div ref={containerRef} className="min-h-screen relative" style={{ background: 'var(--bg-primary)' }}>
 
-      {/* Ambient Background */}
-      <div className="ambient-bg" />
-
       {/* Main Content Container */}
-      <div className="relative z-10 min-h-screen p-5 md:p-6 lg:p-8">
+      <div className="min-h-screen p-5 md:p-6 lg:p-8">
         
         {/* Header */}
-        <header className="liquid-glass mb-5 md:mb-6 px-5 md:px-6 py-4 flex items-center justify-between" style={{ borderRadius: '20px' }}>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            MetaWipe
-          </h1>
+        <header className="neu-card mb-5 md:mb-6 px-5 md:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#6366f1" />
+                  <stop offset="50%" stopColor="#a855f7" />
+                  <stop offset="100%" stopColor="#ec4899" />
+                </linearGradient>
+              </defs>
+              <path d="M16 2L4 8v8c0 7.18 5.12 13.9 12 16 6.88-2.1 12-8.82 12-16V8L16 2z" fill="url(#icon-gradient)" opacity="0.9"/>
+              <path d="M13 17l-3-3 1.5-1.5L13 14l5.5-5.5L20 10l-7 7z" fill="white" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              MetaWipe
+            </h1>
+          </div>
           <div className="flex items-center gap-4">
             <span className="text-sm hidden sm:inline" style={{ color: 'var(--text-secondary)' }}>
               100% Browser-Based
             </span>
-            <button onClick={toggleTheme} className="w-10 h-10 rounded-xl flex items-center justify-center transition-all hover:scale-110" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
-              <i className={`fa-solid ${dark ? 'fa-sun' : 'fa-moon'}`} style={{ color: 'var(--text-primary)' }} />
-            </button>
+            <div className="neu-button w-10 h-10 rounded-xl flex items-center justify-center">
+              <i className="fa-solid fa-shield-halved" style={{ color: 'var(--accent)' }} />
+            </div>
           </div>
         </header>
 
@@ -198,8 +194,7 @@ export default function App() {
           <div className="flex flex-col gap-5 md:gap-6">
             {/* Main Dropzone */}
             <div
-              className={`liquid-glass p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[280px] sm:min-h-[320px] md:min-h-[400px] ${dragActive ? 'drag-active' : ''}`}
-              style={{ borderRadius: '24px' }}
+              className={`neu-inset p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[280px] sm:min-h-[320px] md:min-h-[400px] ${dragActive ? 'drag-active' : ''}`}
               onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
               onDragLeave={() => setDragActive(false)}
               onDrop={handleDrop}
@@ -214,8 +209,8 @@ export default function App() {
                 onChange={(e) => e.target.files && handleFiles(e.target.files)}
               />
               
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-4 sm:mb-6" style={{ background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)' }}>
-                <i className="fa-solid fa-cloud-arrow-up text-2xl sm:text-3xl" style={{ color: '#a855f7' }} />
+              <div className="neu-button w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mb-4 sm:mb-6">
+                <i className="fa-solid fa-cloud-arrow-up text-2xl sm:text-3xl" style={{ color: 'var(--accent)' }} />
               </div>
               
               <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
@@ -228,12 +223,12 @@ export default function App() {
 
             {/* File List (when files are loaded) */}
             {files.length > 0 && (
-              <div className="liquid-glass overflow-hidden" style={{ borderRadius: '20px' }}>
-                <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="neu-card overflow-hidden">
+                <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                   <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                     FILES ({files.length})
                   </span>
-                  <button onClick={clearFiles} className="text-xs px-3 py-1.5 rounded-lg transition-colors" style={{ color: 'var(--danger)', background: 'rgba(239, 68, 68, 0.1)' }}>
+                  <button onClick={clearFiles} className="neu-button text-xs px-3 py-1.5 rounded-lg" style={{ color: 'var(--danger)' }}>
                     <i className="fa-solid fa-trash-can mr-1" />Clear
                   </button>
                 </div>
@@ -241,19 +236,15 @@ export default function App() {
                   {files.map((meta, idx) => (
                     <div
                       key={idx}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${idx === selectedIdx ? 'ring-1' : ''}`}
-                      style={{
-                        background: idx === selectedIdx ? 'rgba(168, 85, 247, 0.1)' : 'rgba(255,255,255,0.02)',
-                        border: idx === selectedIdx ? '1px solid rgba(168, 85, 247, 0.3)' : '1px solid transparent',
-                      }}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all ${idx === selectedIdx ? 'neu-inset' : 'neu-button'}`}
                       onClick={() => setSelectedIdx(idx)}
                     >
-                      <i className={`fa-solid ${getFileIcon(meta.file)} text-lg`} style={{ color: 'var(--text-secondary)' }} />
+                      <i className={`fa-solid ${getFileIcon(meta.file)} text-lg`} style={{ color: idx === selectedIdx ? 'var(--accent)' : 'var(--text-secondary)' }} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{meta.file.name}</p>
                         <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>{formatFileSize(meta.fileSize)}</p>
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); removeFile(idx); }} className="text-xs p-2 rounded-lg hover:bg-white/5" style={{ color: 'var(--text-secondary)' }}>
+                      <button onClick={(e) => { e.stopPropagation(); removeFile(idx); }} className="neu-button text-xs p-2 rounded-lg" style={{ color: 'var(--text-secondary)' }}>
                         <i className="fa-solid fa-xmark" />
                       </button>
                     </div>
@@ -268,8 +259,8 @@ export default function App() {
             
             {/* No File Selected State */}
             {!selectedFile && files.length === 0 && (
-              <div className="liquid-glass p-12 flex flex-col items-center justify-center min-h-[400px]" style={{ borderRadius: '24px' }}>
-                <div className="w-24 h-24 rounded-full flex items-center justify-center mb-6" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="neu-card p-12 flex flex-col items-center justify-center min-h-[400px]">
+                <div className="neu-button w-24 h-24 rounded-full flex items-center justify-center mb-6">
                   <i className="fa-solid fa-file-shield text-4xl" style={{ color: 'var(--text-secondary)' }} />
                 </div>
                 <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No file selected</h3>
@@ -279,33 +270,33 @@ export default function App() {
 
             {/* Metadata Display (when file is selected) */}
             {selectedFile && (
-              <div className="liquid-glass p-6 overflow-hidden" style={{ borderRadius: '20px' }}>
+              <div className="neu-card p-6 overflow-hidden">
                 <div className="flex items-center gap-4 mb-4">
                   {selectedFile.thumbnail && (
-                    <img src={selectedFile.thumbnail} alt="Thumbnail" className="w-16 h-16 rounded-xl object-cover" style={{ border: '1px solid rgba(255,255,255,0.1)' }} />
+                    <img src={selectedFile.thumbnail} alt="Thumbnail" className="w-16 h-16 rounded-xl object-cover neu-inset" />
                   )}
                   <div className="flex-1">
                     <h2 className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{selectedFile.file.name}</h2>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{formatFileSize(selectedFile.fileSize)}</span>
-                      {selectedFile.hasExif && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#c084fc' }}>EXIF</span>}
-                      {selectedFile.hasIptc && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#f87171' }}>IPTC</span>}
-                      {selectedFile.hasXmp && <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'rgba(34, 197, 94, 0.2)', color: '#4ade80' }}>XMP</span>}
+                      {selectedFile.hasExif && <span className="badge badge-image">EXIF</span>}
+                      {selectedFile.hasIptc && <span className="badge badge-pdf">IPTC</span>}
+                      {selectedFile.hasXmp && <span className="badge badge-office">XMP</span>}
                     </div>
                   </div>
                 </div>
 
                 {/* Selective Mode Controls */}
                 {selectiveMode && totalRemovableFields > 0 && (
-                  <div className="mb-4 p-3 rounded-xl flex items-center justify-between" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="neu-inset mb-4 p-3 rounded-xl flex items-center justify-between">
                     <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                       {selectedFields.size} / {totalRemovableFields} fields selected
                     </span>
                     <div className="flex gap-2">
-                      <button onClick={selectAllFields} className="text-xs px-3 py-1 rounded-lg transition-colors" style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc' }}>
+                      <button onClick={selectAllFields} className="neu-button text-xs px-3 py-1 rounded-lg" style={{ color: 'var(--accent)' }}>
                         Select All
                       </button>
-                      <button onClick={deselectAllFields} className="text-xs px-3 py-1 rounded-lg transition-colors" style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-secondary)' }}>
+                      <button onClick={deselectAllFields} className="neu-button text-xs px-3 py-1 rounded-lg" style={{ color: 'var(--text-secondary)' }}>
                         Deselect All
                       </button>
                     </div>
@@ -319,8 +310,8 @@ export default function App() {
                     acc[entry.category].push(entry);
                     return acc;
                   }, {} as Record<string, any[]>)).map(([category, entries]) => (
-                    <div key={category} className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                      <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div key={category} className="neu-inset rounded-xl overflow-hidden">
+                      <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                         <i className={`fa-solid ${category === 'exif' ? 'fa-camera' : category === 'iptc' ? 'fa-newspaper' : category === 'xmp' ? 'fa-code' : category === 'gps' ? 'fa-location-dot' : 'fa-file'} text-xs`} style={{ color: 'var(--accent)' }} />
                         <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                           {getCategoryLabel(category)}
@@ -329,7 +320,7 @@ export default function App() {
                       <table className="w-full text-xs">
                         <tbody>
                           {entries.map((entry: any, i: number) => (
-                            <tr key={i} className={`${selectiveMode && entry.removable ? 'cursor-pointer hover:bg-white/5' : ''}`} onClick={() => selectiveMode && entry.removable && toggleField(entry.key)}>
+                            <tr key={i} className={`${selectiveMode && entry.removable ? 'cursor-pointer hover:bg-black/5' : ''}`} onClick={() => selectiveMode && entry.removable && toggleField(entry.key)}>
                               {selectiveMode && entry.removable && (
                                 <td style={{ width: '30px', padding: '6px 8px' }}>
                                   <input
@@ -355,8 +346,8 @@ export default function App() {
 
             {/* GPS Map */}
             {selectedFile?.gps && (
-              <div className="liquid-glass overflow-hidden" style={{ borderRadius: '20px' }}>
-                <div className="px-6 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="neu-card overflow-hidden">
+                <div className="px-6 py-3 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                   <i className="fa-solid fa-map-location-dot text-sm" style={{ color: 'var(--accent)' }} />
                   <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>GPS Location</span>
                 </div>
@@ -382,7 +373,7 @@ export default function App() {
             )}
 
             {/* Removal Options Panel */}
-            <div className="liquid-glass p-5 sm:p-6" style={{ borderRadius: '20px' }}>
+            <div className="neu-card p-5 sm:p-6">
               <h3 className="text-xs font-bold uppercase tracking-wider mb-5 sm:mb-6" style={{ color: 'var(--text-secondary)' }}>
                 Removal Options
               </h3>
@@ -412,7 +403,7 @@ export default function App() {
               </button>
 
               {/* Protocol Status */}
-              <div className="mt-6 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="mt-6 pt-6" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
                 <h4 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
                   Protocol Status
                 </h4>
@@ -429,10 +420,10 @@ export default function App() {
 
       {/* Processing overlay */}
       {processing && (
-        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}>
-          <div className="liquid-glass p-8 text-center" style={{ borderRadius: '24px' }}>
-            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'rgba(168, 85, 247, 0.2)' }}>
-              <i className="fa-solid fa-spinner fa-spin text-2xl" style={{ color: '#a855f7' }} />
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(30, 41, 59, 0.8)', backdropFilter: 'blur(8px)' }}>
+          <div className="neu-card p-8 text-center">
+            <div className="neu-button w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <i className="fa-solid fa-spinner fa-spin text-2xl" style={{ color: 'var(--accent)' }} />
             </div>
             <p className="text-lg font-medium" style={{ color: 'var(--text-primary)' }}>Processing files...</p>
             <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>All processing happens locally in your browser</p>
@@ -452,7 +443,7 @@ function OptionToggle({ label, checked, onChange, desc }: { label: string; check
         {desc && <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{desc}</p>}
       </div>
       <div
-        className={`toggle-switch ${checked ? 'active' : ''}`}
+        className={`neu-toggle ${checked ? 'active' : ''}`}
         onClick={() => onChange(!checked)}
       />
     </div>
@@ -462,7 +453,7 @@ function OptionToggle({ label, checked, onChange, desc }: { label: string; check
 function ProtocolStatus({ active, label }: { active: boolean; label: string }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-2.5 h-2.5 rounded-full" style={{ background: active ? 'var(--success)' : 'rgba(255,255,255,0.15)', boxShadow: active ? '0 0 8px rgba(34, 197, 94, 0.5)' : 'none' }} />
+      <div className="w-2.5 h-2.5 rounded-full" style={{ background: active ? 'var(--success)' : 'var(--neu-shadow-dark)' }} />
       <span className="text-xs" style={{ color: active ? 'var(--success)' : 'var(--text-secondary)' }}>{label}</span>
     </div>
   );

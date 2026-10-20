@@ -2,34 +2,18 @@
 @import 'leaflet/dist/leaflet.css';
 
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.12);
-  --glass-shadow: rgba(0, 0, 0, 0.5);
-  --glass-highlight: rgba(255, 255, 255, 0.1);
-  --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --accent: #a855f7;
-  --accent-glow: rgba(168, 85, 247, 0.4);
+  --neu-base: #eef2f7;
+  --neu-shadow-dark: #d1d9e6;
+  --neu-shadow-light: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent: #ef4444;
+  --accent-glow: rgba(239, 68, 68, 0.3);
   --danger: #ef4444;
   --success: #22c55e;
   --warning: #f59e0b;
-  --bg-primary: #0a0a14;
-  --bg-secondary: #1a1a2e;
-  --bg-card: rgba(255, 255, 255, 0.03);
-}
-
-.light {
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.8);
-  --glass-shadow: rgba(0, 0, 0, 0.1);
-  --glass-highlight: rgba(255, 255, 255, 0.9);
-  --text-primary: #1a1a2e;
-  --text-secondary: #4a4a5a;
-  --accent: #a855f7;
-  --accent-glow: rgba(168, 85, 247, 0.2);
-  --bg-primary: #f0f2f5;
-  --bg-secondary: #e8eaef;
-  --bg-card: rgba(255, 255, 255, 0.7);
+  --bg-primary: #eef2f7;
+  --bg-secondary: #eef2f7;
 }
 
 * {
@@ -42,119 +26,146 @@ body {
   background: var(--bg-primary);
   overflow-x: hidden;
   transition: background 0.3s ease, color 0.3s ease;
-  position: relative;
 }
 
-/* Ambient Background Blobs */
-.ambient-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.ambient-bg::before {
-  content: '';
-  position: absolute;
-  top: -20%;
-  left: -10%;
-  width: 80vw;
-  height: 80vw;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-  filter: blur(150px);
-  animation: float1 20s ease-in-out infinite;
-}
-
-.ambient-bg::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  right: -15%;
-  width: 90vw;
-  height: 90vw;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
-  filter: blur(150px);
-  animation: float2 25s ease-in-out infinite;
-}
-
-@keyframes float1 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(5%, 10%) scale(1.1); }
-}
-
-@keyframes float2 {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-8%, -5%) scale(1.05); }
-}
-
-
-
-/* Premium Glassmorphism Base */
-.liquid-glass {
-  position: relative;
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  border-radius: 20px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.4),
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  overflow: hidden;
+/* Neumorphic Base - Extruded Elements */
+.neu-card {
+  background: var(--neu-base);
+  border-radius: 24px;
+  box-shadow: 
+    -8px -8px 16px var(--neu-shadow-light),
+    8px 8px 16px var(--neu-shadow-dark);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.liquid-glass::before {
+/* Neumorphic Inset - Sunken Elements */
+.neu-inset {
+  background: var(--neu-base);
+  border-radius: 20px;
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Neumorphic Button */
+.neu-button {
+  background: var(--neu-base);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 
+    -6px -6px 12px var(--neu-shadow-light),
+    6px 6px 12px var(--neu-shadow-dark);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.neu-button:hover {
+  box-shadow: 
+    -4px -4px 8px var(--neu-shadow-light),
+    4px 4px 8px var(--neu-shadow-dark);
+}
+
+.neu-button:active {
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+}
+
+/* Neumorphic Toggle */
+.neu-toggle {
+  position: relative;
+  width: 56px;
+  height: 30px;
+  background: var(--neu-base);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+  flex-shrink: 0;
+}
+
+.neu-toggle::after {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06) 0%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  pointer-events: none;
-  border-radius: 20px 20px 0 0;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  background: var(--neu-base);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    -3px -3px 6px var(--neu-shadow-light),
+    3px 3px 6px var(--neu-shadow-dark);
 }
 
-
-
-.liquid-glass:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-  box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.5),
-    0 4px 12px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 30px var(--accent-glow);
+.neu-toggle.active {
+  background: var(--accent);
+  box-shadow: 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.2),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.1);
 }
 
+.neu-toggle.active::after {
+  transform: translateX(26px);
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
 
+/* Primary Action Button */
+.btn-primary {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    -6px -6px 12px var(--neu-shadow-light),
+    6px 6px 12px var(--neu-shadow-dark),
+    0 4px 20px rgba(239, 68, 68, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    -4px -4px 8px var(--neu-shadow-light),
+    4px 4px 8px var(--neu-shadow-dark),
+    0 8px 30px rgba(239, 68, 68, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--neu-base);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background: var(--neu-shadow-dark);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: #b8c2d1;
 }
 
 /* Metadata table */
@@ -165,11 +176,11 @@ body {
 }
 
 .meta-table tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
 
 .meta-table td {
-  padding: 4px 8px;
+  padding: 6px 10px;
   vertical-align: top;
 }
 
@@ -191,133 +202,51 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px var(--accent-glow); }
-  50% { box-shadow: 0 0 20px var(--accent-glow); }
-}
-
 .animate-fade-in {
   animation: fadeIn 0.3s ease forwards;
 }
 
 /* Leaflet overrides */
 .leaflet-container {
-  border-radius: 12px;
+  border-radius: 16px;
   z-index: 1;
 }
 
 /* Drag active state */
 .drag-active {
-  border-color: var(--accent) !important;
-  background: rgba(99, 102, 241, 0.1) !important;
-  animation: pulse-glow 1.5s ease infinite;
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light),
+    0 0 0 3px var(--accent);
 }
 
 /* File type badges */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: 9999px;
+  padding: 3px 10px;
+  border-radius: 12px;
   font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  background: var(--neu-base);
+  box-shadow: 
+    -2px -2px 4px var(--neu-shadow-light),
+    2px 2px 4px var(--neu-shadow-dark);
 }
 
-.badge-image { background: rgba(99, 102, 241, 0.2); color: #818cf8; }
-.badge-pdf { background: rgba(239, 68, 68, 0.2); color: #f87171; }
-.badge-office { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
-
-/* Premium Toggle switch */
-.toggle-switch {
-  position: relative;
-  width: 52px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  flex-shrink: 0;
-}
-
-.toggle-switch:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.toggle-switch.active {
-  background: #a855f7;
-  border-color: rgba(168, 85, 247, 0.5);
-  box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
-}
-
-.toggle-switch::after {
-  content: '';
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 20px;
-  height: 20px;
-  background: white;
-  border-radius: 50%;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.toggle-switch.active::after {
-  transform: translateX(24px);
-}
-
-/* Premium Button */
-.btn-primary {
-  background: linear-gradient(135deg, #6366f1, #a855f7);
-  color: white;
-  font-weight: 600;
-  border: none;
-  border-radius: 16px;
-  padding: 14px 28px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.4);
-}
-
-.btn-primary:hover::before {
-  opacity: 1;
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
+.badge-image { color: #6366f1; }
+.badge-pdf { color: #ef4444; }
+.badge-office { color: #22c55e; }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .liquid-glass {
+  .neu-card {
+    border-radius: 20px;
+  }
+  
+  .neu-inset {
     border-radius: 16px;
   }
   
@@ -327,17 +256,17 @@ body {
     font-size: 15px;
   }
   
-  .toggle-switch {
-    width: 56px;
-    height: 30px;
+  .neu-toggle {
+    width: 60px;
+    height: 32px;
   }
   
-  .toggle-switch::after {
-    width: 22px;
-    height: 22px;
+  .neu-toggle::after {
+    width: 24px;
+    height: 24px;
   }
   
-  .toggle-switch.active::after {
-    transform: translateX(26px);
+  .neu-toggle.active::after {
+    transform: translateX(28px);
   }
 }
