@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'leaflet/dist/leaflet.css';
 
+/* ============ LIGHT THEME (Default) ============ */
 :root {
   --neu-base: #eef2f7;
   --neu-shadow-dark: #cbd5e1;
@@ -13,7 +14,23 @@
   --success: #22c55e;
   --warning: #f59e0b;
   --bg-primary: #eef2f7;
-  --bg-secondary: #eef2f7;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+}
+
+/* ============ DARK THEME (Cyber Slate) ============ */
+.dark-theme {
+  --neu-base: #23272a;
+  --neu-shadow-dark: #1a1c1e;
+  --neu-shadow-light: #2c3135;
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --accent: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.4);
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --bg-primary: #23272a;
+  --border-subtle: rgba(255, 255, 255, 0.06);
 }
 
 * {
@@ -28,8 +45,10 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Neumorphic Base - Extreme Depth Extruded Elements */
-.neu-card {
+/* ============ NEUMORPHIC COMPONENTS ============ */
+
+/* Light Theme Extrusion */
+.light-theme .neu-card {
   background: var(--neu-base);
   border-radius: 28px;
   box-shadow: 
@@ -38,8 +57,7 @@ body {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Neumorphic Inset - Deep Carved Elements */
-.neu-inset {
+.light-theme .neu-inset {
   background: var(--neu-base);
   border-radius: 24px;
   box-shadow: 
@@ -48,8 +66,7 @@ body {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Neumorphic Button */
-.neu-button {
+.light-theme .neu-button {
   background: var(--neu-base);
   border: none;
   border-radius: 18px;
@@ -60,6 +77,37 @@ body {
   cursor: pointer;
 }
 
+/* Dark Theme Extrusion */
+.dark-theme .neu-card {
+  background: var(--neu-base);
+  border-radius: 28px;
+  box-shadow: 
+    -8px -8px 16px var(--neu-shadow-light),
+    8px 8px 16px var(--neu-shadow-dark);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-theme .neu-inset {
+  background: var(--neu-base);
+  border-radius: 24px;
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark-theme .neu-button {
+  background: var(--neu-base);
+  border: none;
+  border-radius: 18px;
+  box-shadow: 
+    -6px -6px 12px var(--neu-shadow-light),
+    6px 6px 12px var(--neu-shadow-dark);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* Common Button States */
 .neu-button:hover {
   box-shadow: 
     -4px -4px 8px var(--neu-shadow-light),
@@ -72,8 +120,10 @@ body {
     inset -4px -4px 8px var(--neu-shadow-light);
 }
 
-/* Neumorphic Toggle */
-.neu-toggle {
+/* ============ TOGGLES ============ */
+
+/* Light Theme Toggle */
+.light-theme .neu-toggle {
   position: relative;
   width: 60px;
   height: 32px;
@@ -87,7 +137,7 @@ body {
   flex-shrink: 0;
 }
 
-.neu-toggle::after {
+.light-theme .neu-toggle::after {
   content: '';
   position: absolute;
   top: 4px;
@@ -102,6 +152,37 @@ body {
     3px 3px 6px var(--neu-shadow-dark);
 }
 
+/* Dark Theme Toggle */
+.dark-theme .neu-toggle {
+  position: relative;
+  width: 60px;
+  height: 32px;
+  background: var(--neu-base);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+  flex-shrink: 0;
+}
+
+.dark-theme .neu-toggle::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  background: var(--neu-base);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    -3px -3px 6px var(--neu-shadow-light),
+    3px 3px 6px var(--neu-shadow-dark);
+}
+
+/* Toggle Active State */
 .neu-toggle.active {
   background: var(--accent);
   box-shadow: 
@@ -115,7 +196,7 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Nuclear Wipe Toggle - Elevated */
+/* Nuclear Wipe Toggle */
 .neu-toggle-nuclear {
   position: relative;
   width: 72px;
@@ -159,7 +240,8 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Primary Action Button */
+/* ============ PRIMARY BUTTON ============ */
+
 .btn-primary {
   background: linear-gradient(135deg, #ef4444, #f97316);
   color: white;
@@ -193,7 +275,8 @@ body {
   transform: none;
 }
 
-/* Liquid Gauge Animation */
+/* ============ LIQUID GAUGE ============ */
+
 .liquid-gauge {
   position: relative;
   width: 120px;
@@ -218,12 +301,8 @@ body {
 }
 
 @keyframes liquid-wave {
-  0%, 100% {
-    transform: translateY(0) scaleY(1);
-  }
-  50% {
-    transform: translateY(-5px) scaleY(1.05);
-  }
+  0%, 100% { transform: translateY(0) scaleY(1); }
+  50% { transform: translateY(-5px) scaleY(1.05); }
 }
 
 .liquid-gauge-fill::before {
@@ -238,15 +317,12 @@ body {
 }
 
 @keyframes wave-motion {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-25%);
-  }
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-25%); }
 }
 
-/* Scrollbar */
+/* ============ SCROLLBAR ============ */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -266,59 +342,12 @@ body {
   background: #b8c2d1;
 }
 
-/* Metadata table */
-.meta-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.75rem;
+.dark-theme ::-webkit-scrollbar-thumb:hover {
+  background: #3a3f45;
 }
 
-.meta-table tr {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
-}
+/* ============ BADGES ============ */
 
-.meta-table td {
-  padding: 6px 10px;
-  vertical-align: top;
-}
-
-.meta-table td:first-child {
-  color: var(--text-secondary);
-  white-space: nowrap;
-  width: 35%;
-  font-weight: 500;
-}
-
-.meta-table td:last-child {
-  color: var(--text-primary);
-  word-break: break-all;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease forwards;
-}
-
-/* Leaflet overrides */
-.leaflet-container {
-  border-radius: 16px;
-  z-index: 1;
-}
-
-/* Drag active state - Physics feedback */
-.drag-active {
-  box-shadow: 
-    -10px -10px 20px var(--neu-shadow-light),
-    10px 10px 20px var(--neu-shadow-dark);
-  transform: scale(1.02);
-}
-
-/* File type badges */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -338,7 +367,39 @@ body {
 .badge-pdf { color: #ef4444; }
 .badge-office { color: #22c55e; }
 
-/* Mobile Responsiveness */
+.dark-theme .badge-image { color: #818cf8; }
+.dark-theme .badge-pdf { color: #f87171; }
+.dark-theme .badge-office { color: #4ade80; }
+
+/* ============ DRAG STATE ============ */
+
+.drag-active {
+  box-shadow: 
+    -10px -10px 20px var(--neu-shadow-light),
+    10px 10px 20px var(--neu-shadow-dark);
+  transform: scale(1.02);
+}
+
+/* ============ LEAFLET ============ */
+
+.leaflet-container {
+  border-radius: 16px;
+  z-index: 1;
+}
+
+/* ============ ANIMATIONS ============ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* ============ MOBILE RESPONSIVENESS ============ */
+
 @media (max-width: 768px) {
   .neu-card {
     border-radius: 24px;

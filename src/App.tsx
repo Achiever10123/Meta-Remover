@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { readMetadata, FileMetadata, getCategoryLabel, formatFileSize } from './utils/metadataReader';
-import { removeMetadata, getCleanedFilename, RemovalOptions, DEFAULT_OPTIONS } from './utils/metadataRemover';
+import { removeMetadata, getCleanedFilename, RemovalOptions, DEFAULT_OPTIONS, RemovalResult } from './utils/metadataRemover';
 import { convertImageFormat, OutputFormat, getFormatExtension, isConvertibleImage } from './utils/formatConverter';
 import { playClickSound, playToggleSound, playNuclearSound } from './utils/audioFeedback';
 import JSZip from 'jszip';
@@ -8,7 +8,6 @@ import { saveAs } from 'file-saver';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
-// Fix leaflet default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -16,7 +15,6 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-// File type helpers
 function getFileCategory(file: File): 'image' | 'pdf' | 'office' {
   if (file.type.startsWith('image/')) return 'image';
   if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) return 'pdf';
@@ -30,7 +28,6 @@ function getFileIcon(file: File): string {
   return 'fa-file-word';
 }
 
-// Log entry interface
 interface LogEntry {
   timestamp: string;
   fileName: string;
@@ -38,9 +35,16 @@ interface LogEntry {
   savedKB: number;
 }
 
-// Main App
+interface FileWithResult extends FileMetadata {
+  cleanResult?: RemovalResult;
+}
+
 export default function App() {
-  const [files, setFiles] = useState<FileMetadata[]>([]);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('metawipe-dark-mode');
+    return saved === 'true';
+  });
+  const [files, setFiles] = useState<FileWithResult[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [processing, setProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -53,12 +57,23 @@ export default function App() {
   const [cleanLog, setCleanLog] = useState<LogEntry[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    localStorage.setItem('metawipe-dark-mode', String(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark-bg');
+    } else {
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark-bg');
+    }
+  }, [darkMode]);
+
   const handleFiles = useCallback(async (newFiles: FileList | File[]) => {
     const fileArr = Array.from(newFiles);
     setProcessing(true);
     setProgress(0);
 
-    const results: FileMetadata[] = [];
+    const results: FileWithResult[] = [];
     for (let i = 0; i < fileArr.length; i++) {
       const file = fileArr[i];
       try {
@@ -76,7 +91,7 @@ export default function App() {
           mimeType: file.type,
         });
       }
-      setProgress(((i + 1) / fileArr.length) * 50); // 50% for reading
+      setProgress(((i + 1) / fileArr.length) * 50);
     }
 
     setFiles(prev => [...prev, ...results]);
@@ -106,38 +121,39 @@ export default function App() {
     }
 
     const newLogEntries: LogEntry[] = [];
+    const updatedFiles: FileWithResult[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const meta = files[i];
       try {
-        const originalSize = meta.file.size;
-        const removableCount = meta.entries.filter(e => e.removable).length;
+        const result = await removeMetadata(meta.file, opts);
         
-        let cleaned = await removeMetadata(meta.file, opts);
-        
-        // Convert format if requested
+        let finalBlob = result.blob;
         if (outputFormat !== 'original' && isConvertibleImage(meta.file)) {
-          cleaned = await convertImageFormat(cleaned, outputFormat);
+          finalBlob = await convertImageFormat(result.blob, outputFormat);
         }
-        
-        const savedBytes = originalSize - cleaned.size;
+
+        const savedBytes = result.originalSize - result.cleanedSize;
         const savedKB = Math.max(0, savedBytes / 1024);
         
         const timestamp = new Date().toLocaleTimeString();
         newLogEntries.push({
           timestamp,
           fileName: meta.file.name,
-          tagsRemoved: removableCount,
+          tagsRemoved: result.tagsRemoved,
           savedKB: Math.round(savedKB * 10) / 10,
         });
+
+        updatedFiles.push({ ...meta, cleanResult: result });
 
         if (files.length === 1) {
           const ext = outputFormat !== 'original' ? getFormatExtension(outputFormat) : '';
           const name = ext ? getCleanedFilename(meta.file.name).replace(/\.[^/.]+$/, `.${ext}`) : getCleanedFilename(meta.file.name);
-          saveAs(cleaned, name);
+          saveAs(finalBlob, name);
         }
       } catch (err) {
         console.error('Clean error:', err);
+        updatedFiles.push(meta);
       }
       
       setProgress(((i + 1) / files.length) * 100);
@@ -145,24 +161,29 @@ export default function App() {
 
     if (files.length > 1) {
       const zip = new JSZip();
-      for (const meta of files) {
-        try {
-          let cleaned = await removeMetadata(meta.file, opts);
-          if (outputFormat !== 'original' && isConvertibleImage(meta.file)) {
-            cleaned = await convertImageFormat(cleaned, outputFormat);
+      for (let i = 0; i < files.length; i++) {
+        const meta = files[i];
+        const result = updatedFiles[i].cleanResult;
+        if (result) {
+          try {
+            let finalBlob = result.blob;
+            if (outputFormat !== 'original' && isConvertibleImage(meta.file)) {
+              finalBlob = await convertImageFormat(result.blob, outputFormat);
+            }
+            const ext = outputFormat !== 'original' ? getFormatExtension(outputFormat) : '';
+            const name = ext ? getCleanedFilename(meta.file.name).replace(/\.[^/.]+$/, `.${ext}`) : getCleanedFilename(meta.file.name);
+            zip.file(name, finalBlob);
+          } catch (err) {
+            console.error('Clean error for', meta.file.name, err);
           }
-          const ext = outputFormat !== 'original' ? getFormatExtension(outputFormat) : '';
-          const name = ext ? getCleanedFilename(meta.file.name).replace(/\.[^/.]+$/, `.${ext}`) : getCleanedFilename(meta.file.name);
-          zip.file(name, cleaned);
-        } catch (err) {
-          console.error('Clean error for', meta.file.name, err);
         }
       }
       const content = await zip.generateAsync({ type: 'blob' });
       saveAs(content, 'metawipe-cleaned.zip');
     }
 
-    setCleanLog(prev => [...newLogEntries, ...prev].slice(0, 50)); // Keep last 50 entries
+    setFiles(updatedFiles);
+    setCleanLog(prev => [...newLogEntries, ...prev].slice(0, 50));
     setProcessing(false);
     setProgress(0);
   }, [files, removalOptions, selectiveMode, selectedFields, outputFormat]);
@@ -228,9 +249,11 @@ export default function App() {
 
   const selectedFile = selectedIdx >= 0 ? files[selectedIdx] : null;
   const totalRemovableFields = selectedFile?.entries.filter(e => e.removable).length || 0;
+  const totalTagsFound = selectedFile?.entries.length || 0;
+  const tagsPurged = selectedFile?.cleanResult?.tagsRemoved || 0;
 
   return (
-    <div className="min-h-screen p-5 md:p-6 lg:p-8">
+    <div className={`min-h-screen p-5 md:p-6 lg:p-8 ${darkMode ? 'dark-theme' : 'light-theme'}`}>
       {/* Header */}
       <header className="neu-card mb-5 md:mb-6 px-5 md:px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -253,18 +276,19 @@ export default function App() {
           <span className="text-sm hidden sm:inline" style={{ color: 'var(--text-secondary)' }}>
             100% Browser-Based
           </span>
-          <div className="neu-button w-10 h-10 rounded-xl flex items-center justify-center">
-            <i className="fa-solid fa-shield-halved" style={{ color: 'var(--accent)' }} />
-          </div>
+          <div 
+            className={`neu-toggle ${darkMode ? 'active' : ''}`}
+            onClick={() => { playClickSound(); setDarkMode(!darkMode); }}
+            title="Toggle Dark Mode"
+          />
         </div>
       </header>
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
         
-        {/* Left Column - Dropzone & File List */}
+        {/* Left Column */}
         <div className="flex flex-col gap-5 md:gap-6">
-          {/* Main Dropzone */}
           <div
             className={`${dragActive ? 'neu-card' : 'neu-inset'} p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col items-center justify-center cursor-pointer transition-all min-h-[280px] sm:min-h-[320px] md:min-h-[400px]`}
             onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -293,10 +317,9 @@ export default function App() {
             </p>
           </div>
 
-          {/* File List */}
           {files.length > 0 && (
             <div className="neu-card overflow-hidden">
-              <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+              <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                 <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>
                   FILES ({files.length})
                 </span>
@@ -332,10 +355,9 @@ export default function App() {
           )}
         </div>
 
-        {/* Right Column - Controls & Metadata */}
+        {/* Right Column */}
         <div className="flex flex-col gap-5 md:gap-6">
           
-          {/* No File Selected State */}
           {!selectedFile && files.length === 0 && (
             <div className="neu-card p-12 flex flex-col items-center justify-center min-h-[400px]">
               <div className="neu-button w-24 h-24 rounded-full flex items-center justify-center mb-6">
@@ -346,25 +368,20 @@ export default function App() {
             </div>
           )}
 
-          {/* Metadata Display */}
           {selectedFile && (
             <div className="neu-card p-6 overflow-hidden">
-              <div className="flex items-center gap-4 mb-4">
-                {selectedFile.thumbnail && (
-                  <img src={selectedFile.thumbnail} alt="Thumbnail" className="w-16 h-16 rounded-xl object-cover neu-inset" />
-                )}
-                <div className="flex-1">
-                  <h2 className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{selectedFile.file.name}</h2>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{formatFileSize(selectedFile.fileSize)}</span>
-                    {selectedFile.hasExif && <span className="badge badge-image">EXIF</span>}
-                    {selectedFile.hasIptc && <span className="badge badge-pdf">IPTC</span>}
-                    {selectedFile.hasXmp && <span className="badge badge-office">XMP</span>}
-                  </div>
+              {/* Metadata Overview */}
+              <div className="mb-4 p-4 neu-inset rounded-xl">
+                <div className="flex items-center justify-between text-sm">
+                  <span style={{ color: 'var(--text-secondary)' }}>
+                    Total Tags Found: <strong style={{ color: 'var(--text-primary)' }}>{totalTagsFound}</strong>
+                  </span>
+                  <span style={{ color: 'var(--text-secondary)' }}>
+                    Tags Purged: <strong style={{ color: tagsPurged > 0 ? 'var(--success)' : 'var(--text-secondary)' }}>{tagsPurged}</strong>
+                  </span>
                 </div>
               </div>
 
-              {/* Selective Mode Controls */}
               {selectiveMode && totalRemovableFields > 0 && (
                 <div className="neu-inset mb-4 p-3 rounded-xl flex items-center justify-between">
                   <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -381,15 +398,14 @@ export default function App() {
                 </div>
               )}
 
-              {/* Metadata Tables */}
-              <div className="max-h-[400px] overflow-y-auto space-y-3">
+              <div className="max-h-[500px] overflow-y-auto space-y-3">
                 {Object.entries(selectedFile.entries.reduce((acc, entry) => {
                   if (!acc[entry.category]) acc[entry.category] = [];
                   acc[entry.category].push(entry);
                   return acc;
                 }, {} as Record<string, any[]>)).map(([category, entries]) => (
                   <div key={category} className="neu-inset rounded-xl overflow-hidden">
-                    <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                    <div className="px-4 py-2 flex items-center gap-2" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                       <i className={`fa-solid ${category === 'exif' ? 'fa-camera' : category === 'iptc' ? 'fa-newspaper' : category === 'xmp' ? 'fa-code' : category === 'gps' ? 'fa-location-dot' : 'fa-file'} text-xs`} style={{ color: 'var(--accent)' }} />
                       <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>
                         {getCategoryLabel(category)}
@@ -410,8 +426,8 @@ export default function App() {
                                 />
                               </td>
                             )}
-                            <td style={{ padding: '6px 8px', color: 'var(--text-secondary)', fontWeight: 500 }}>{entry.key}</td>
-                            <td style={{ padding: '6px 8px', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{String(entry.value)}</td>
+                            <td style={{ padding: '8px 12px', color: 'var(--text-secondary)', fontWeight: 500, width: '40%' }}>{entry.key}</td>
+                            <td style={{ padding: '8px 12px', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{String(entry.value)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -422,10 +438,8 @@ export default function App() {
             </div>
           )}
 
-          {/* Removal Options Panel */}
           <div className="neu-card p-5 sm:p-6">
-            {/* Nuclear Wipe Master Switch */}
-            <div className="mb-6 pb-6" style={{ borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+            <div className="mb-6 pb-6" style={{ borderBottom: '1px solid var(--border-subtle)' }}>
               <div className="flex items-center justify-between gap-4">
                 <div className="flex-1">
                   <span className="text-sm sm:text-base font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -451,13 +465,12 @@ export default function App() {
               <OptionToggle label="XMP Data" checked={removalOptions.removeXmp} onChange={(v) => handleToggleChange('removeXmp', v)} />
               <OptionToggle label="GPS Data" checked={removalOptions.removeGps} onChange={(v) => handleToggleChange('removeGps', v)} />
               <OptionToggle label="Trailing Data" checked={removalOptions.removeTrailing} onChange={(v) => handleToggleChange('removeTrailing', v)} desc="Post-EOI tracking payloads" />
-              <div className="pt-4" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+              <div className="pt-4" style={{ borderTop: '1px solid var(--border-subtle)' }}>
                 <OptionToggle label="Selective Mode" checked={selectiveMode} onChange={(v) => { playClickSound(); setSelectiveMode(v); }} desc="Choose individual fields" />
               </div>
             </div>
 
-            {/* Download Format Selector */}
-            <div className="mt-6 pt-6" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+            <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--border-subtle)' }}>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
                 Output Format
               </h4>
@@ -474,7 +487,6 @@ export default function App() {
               </select>
             </div>
 
-            {/* Action Button */}
             <button
               onClick={() => { playClickSound(); handleClean(); }}
               disabled={files.length === 0 || processing}
@@ -487,8 +499,7 @@ export default function App() {
               )}
             </button>
 
-            {/* Protocol Status */}
-            <div className="mt-6 pt-6" style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+            <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--border-subtle)' }}>
               <h4 className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
                 Protocol Status
               </h4>
@@ -500,7 +511,6 @@ export default function App() {
             </div>
           </div>
 
-          {/* Clean Log */}
           {cleanLog.length > 0 && (
             <div className="neu-card p-5 sm:p-6">
               <h3 className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-secondary)' }}>
@@ -519,7 +529,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Processing overlay with Liquid Gauge */}
       {processing && (
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{ background: 'rgba(30, 41, 59, 0.8)', backdropFilter: 'blur(8px)' }}>
           <div className="neu-card p-8 text-center">
@@ -540,7 +549,6 @@ export default function App() {
   );
 }
 
-// Sub-components
 function OptionToggle({ label, checked, onChange, desc }: { label: string; checked: boolean; onChange: (v: boolean) => void; desc?: string }) {
   return (
     <div className="flex items-center justify-between gap-4">
