@@ -1,0 +1,272 @@
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  --neu-base: #eef2f7;
+  --neu-shadow-dark: #d1d9e6;
+  --neu-shadow-light: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent: #ef4444;
+  --accent-glow: rgba(239, 68, 68, 0.3);
+  --danger: #ef4444;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --bg-primary: #eef2f7;
+  --bg-secondary: #eef2f7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Neumorphic Base - Extruded Elements */
+.neu-card {
+  background: var(--neu-base);
+  border-radius: 24px;
+  box-shadow: 
+    -8px -8px 16px var(--neu-shadow-light),
+    8px 8px 16px var(--neu-shadow-dark);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Neumorphic Inset - Sunken Elements */
+.neu-inset {
+  background: var(--neu-base);
+  border-radius: 20px;
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Neumorphic Button */
+.neu-button {
+  background: var(--neu-base);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 
+    -6px -6px 12px var(--neu-shadow-light),
+    6px 6px 12px var(--neu-shadow-dark);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.neu-button:hover {
+  box-shadow: 
+    -4px -4px 8px var(--neu-shadow-light),
+    4px 4px 8px var(--neu-shadow-dark);
+}
+
+.neu-button:active {
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+}
+
+/* Neumorphic Toggle */
+.neu-toggle {
+  position: relative;
+  width: 56px;
+  height: 30px;
+  background: var(--neu-base);
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    inset 4px 4px 8px var(--neu-shadow-dark),
+    inset -4px -4px 8px var(--neu-shadow-light);
+  flex-shrink: 0;
+}
+
+.neu-toggle::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 22px;
+  height: 22px;
+  background: var(--neu-base);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    -3px -3px 6px var(--neu-shadow-light),
+    3px 3px 6px var(--neu-shadow-dark);
+}
+
+.neu-toggle.active {
+  background: var(--accent);
+  box-shadow: 
+    inset 4px 4px 8px rgba(0, 0, 0, 0.2),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.1);
+}
+
+.neu-toggle.active::after {
+  transform: translateX(26px);
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Primary Action Button */
+.btn-primary {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    -6px -6px 12px var(--neu-shadow-light),
+    6px 6px 12px var(--neu-shadow-dark),
+    0 4px 20px rgba(239, 68, 68, 0.2);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    -4px -4px 8px var(--neu-shadow-light),
+    4px 4px 8px var(--neu-shadow-dark),
+    0 8px 30px rgba(239, 68, 68, 0.3);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--neu-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--neu-shadow-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b8c2d1;
+}
+
+/* Metadata table */
+.meta-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+}
+
+.meta-table tr {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.meta-table td {
+  padding: 6px 10px;
+  vertical-align: top;
+}
+
+.meta-table td:first-child {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  width: 35%;
+  font-weight: 500;
+}
+
+.meta-table td:last-child {
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Leaflet overrides */
+.leaflet-container {
+  border-radius: 16px;
+  z-index: 1;
+}
+
+/* Drag active state */
+.drag-active {
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light),
+    0 0 0 3px var(--accent);
+}
+
+/* File type badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--neu-base);
+  box-shadow: 
+    -2px -2px 4px var(--neu-shadow-light),
+    2px 2px 4px var(--neu-shadow-dark);
+}
+
+.badge-image { color: #6366f1; }
+.badge-pdf { color: #ef4444; }
+.badge-office { color: #22c55e; }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .neu-card {
+    border-radius: 20px;
+  }
+  
+  .neu-inset {
+    border-radius: 16px;
+  }
+  
+  .btn-primary {
+    padding: 16px 24px;
+    border-radius: 14px;
+    font-size: 15px;
+  }
+  
+  .neu-toggle {
+    width: 60px;
+    height: 32px;
+  }
+  
+  .neu-toggle::after {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .neu-toggle.active::after {
+    transform: translateX(28px);
+  }
+}
