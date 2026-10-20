@@ -3,7 +3,7 @@
 
 :root {
   --neu-base: #eef2f7;
-  --neu-shadow-dark: #d1d9e6;
+  --neu-shadow-dark: #cbd5e1;
   --neu-shadow-light: #ffffff;
   --text-primary: #1e293b;
   --text-secondary: #64748b;
@@ -28,31 +28,31 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Neumorphic Base - Extruded Elements */
+/* Neumorphic Base - Extreme Depth Extruded Elements */
 .neu-card {
+  background: var(--neu-base);
+  border-radius: 28px;
+  box-shadow: 
+    -10px -10px 20px var(--neu-shadow-light),
+    10px 10px 20px var(--neu-shadow-dark);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Neumorphic Inset - Deep Carved Elements */
+.neu-inset {
   background: var(--neu-base);
   border-radius: 24px;
   box-shadow: 
-    -8px -8px 16px var(--neu-shadow-light),
-    8px 8px 16px var(--neu-shadow-dark);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Neumorphic Inset - Sunken Elements */
-.neu-inset {
-  background: var(--neu-base);
-  border-radius: 20px;
-  box-shadow: 
-    inset 6px 6px 12px var(--neu-shadow-dark),
-    inset -6px -6px 12px var(--neu-shadow-light);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    inset 8px 8px 16px var(--neu-shadow-dark),
+    inset -8px -8px 16px var(--neu-shadow-light);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Neumorphic Button */
 .neu-button {
   background: var(--neu-base);
   border: none;
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: 
     -6px -6px 12px var(--neu-shadow-light),
     6px 6px 12px var(--neu-shadow-dark);
@@ -75,10 +75,10 @@ body {
 /* Neumorphic Toggle */
 .neu-toggle {
   position: relative;
-  width: 56px;
-  height: 30px;
+  width: 60px;
+  height: 32px;
   background: var(--neu-base);
-  border-radius: 15px;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
@@ -92,8 +92,8 @@ body {
   position: absolute;
   top: 4px;
   left: 4px;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   background: var(--neu-base);
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -110,9 +110,53 @@ body {
 }
 
 .neu-toggle.active::after {
-  transform: translateX(26px);
+  transform: translateX(28px);
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Nuclear Wipe Toggle - Elevated */
+.neu-toggle-nuclear {
+  position: relative;
+  width: 72px;
+  height: 38px;
+  background: var(--neu-base);
+  border-radius: 19px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    inset 5px 5px 10px var(--neu-shadow-dark),
+    inset -5px -5px 10px var(--neu-shadow-light);
+  flex-shrink: 0;
+}
+
+.neu-toggle-nuclear::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: 28px;
+  height: 28px;
+  background: var(--neu-base);
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    -4px -4px 8px var(--neu-shadow-light),
+    4px 4px 8px var(--neu-shadow-dark);
+}
+
+.neu-toggle-nuclear.active {
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  box-shadow: 
+    inset 5px 5px 10px rgba(0, 0, 0, 0.3),
+    inset -5px -5px 10px rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+.neu-toggle-nuclear.active::after {
+  transform: translateX(34px);
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Primary Action Button */
@@ -121,14 +165,14 @@ body {
   color: white;
   font-weight: 600;
   border: none;
-  border-radius: 16px;
-  padding: 14px 28px;
+  border-radius: 18px;
+  padding: 16px 32px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 
     -6px -6px 12px var(--neu-shadow-light),
     6px 6px 12px var(--neu-shadow-dark),
-    0 4px 20px rgba(239, 68, 68, 0.2);
+    0 4px 20px rgba(239, 68, 68, 0.3);
 }
 
 .btn-primary:hover {
@@ -136,7 +180,7 @@ body {
   box-shadow: 
     -4px -4px 8px var(--neu-shadow-light),
     4px 4px 8px var(--neu-shadow-dark),
-    0 8px 30px rgba(239, 68, 68, 0.3);
+    0 8px 30px rgba(239, 68, 68, 0.4);
 }
 
 .btn-primary:active {
@@ -149,6 +193,59 @@ body {
   transform: none;
 }
 
+/* Liquid Gauge Animation */
+.liquid-gauge {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--neu-base);
+  box-shadow: 
+    inset 6px 6px 12px var(--neu-shadow-dark),
+    inset -6px -6px 12px var(--neu-shadow-light);
+  overflow: hidden;
+}
+
+.liquid-gauge-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(180deg, rgba(239, 68, 68, 0.8), rgba(249, 115, 22, 0.9));
+  transition: height 0.3s ease;
+  animation: liquid-wave 2s ease-in-out infinite;
+}
+
+@keyframes liquid-wave {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-5px) scaleY(1.05);
+  }
+}
+
+.liquid-gauge-fill::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 0;
+  width: 200%;
+  height: 20px;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  animation: wave-motion 3s ease-in-out infinite;
+}
+
+@keyframes wave-motion {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-25%);
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -157,6 +254,7 @@ body {
 
 ::-webkit-scrollbar-track {
   background: var(--neu-base);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -212,12 +310,12 @@ body {
   z-index: 1;
 }
 
-/* Drag active state */
+/* Drag active state - Physics feedback */
 .drag-active {
   box-shadow: 
-    inset 6px 6px 12px var(--neu-shadow-dark),
-    inset -6px -6px 12px var(--neu-shadow-light),
-    0 0 0 3px var(--accent);
+    -10px -10px 20px var(--neu-shadow-light),
+    10px 10px 20px var(--neu-shadow-dark);
+  transform: scale(1.02);
 }
 
 /* File type badges */
@@ -243,30 +341,44 @@ body {
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .neu-card {
-    border-radius: 20px;
+    border-radius: 24px;
   }
   
   .neu-inset {
-    border-radius: 16px;
+    border-radius: 20px;
   }
   
   .btn-primary {
-    padding: 16px 24px;
-    border-radius: 14px;
+    padding: 18px 28px;
+    border-radius: 16px;
     font-size: 15px;
   }
   
   .neu-toggle {
-    width: 60px;
-    height: 32px;
+    width: 64px;
+    height: 34px;
   }
   
   .neu-toggle::after {
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
   
   .neu-toggle.active::after {
-    transform: translateX(28px);
+    transform: translateX(30px);
+  }
+  
+  .neu-toggle-nuclear {
+    width: 76px;
+    height: 40px;
+  }
+  
+  .neu-toggle-nuclear::after {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .neu-toggle-nuclear.active::after {
+    transform: translateX(36px);
   }
 }
